@@ -30,7 +30,7 @@ public:
 	int32 CollectedCoinCount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
-	float LevelDuration;
+	float WaveDuration;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
 	int32 CurrentLevelIndex;
@@ -41,8 +41,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
 	TArray<FName> LevelMapNames;
 
-	FTimerHandle LevelTimerHandle;
+	FTimerHandle WaveTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
+	FTimerHandle BombSpawnTimerHandle;
 
 	UFUNCTION(BlueprintPure, Category = "Score")
 	int32 GetScore() const;
@@ -69,4 +70,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Level")
 	int32 MaxWaveNumber = 3;
+
+	UPROPERTY(EditAnywhere, Category = "Level")
+	float BombSpawnInterval = 1.0f;
 };

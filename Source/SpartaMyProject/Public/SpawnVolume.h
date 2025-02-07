@@ -8,6 +8,7 @@
 #include "SpawnVolume.generated.h"
 
 class ASpike;
+class ABomb;
 
 UCLASS()
 class SPARTAMYPROJECT_API ASpawnVolume : public AActor
@@ -37,9 +38,17 @@ public:
 	ASpike* SpawnSpike(const FVector& Position);
 	
 	ASpike* SpawnSpikeAtRandomPosition(float Height);
+
+	ABomb* SpawnBomb(const FVector& Position);
+	ABomb* SpawnBombAtRandomPosition();
+
+
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "Spawning")
-	TSubclassOf<class ASpike> SpikeClass;
+	TSubclassOf<ASpike> SpikeClass;
+
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	TSubclassOf<ABomb> BombClass;
 
 };

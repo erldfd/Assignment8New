@@ -2,6 +2,7 @@
 
 #include "ItemSpawnRow.h"
 #include "Spike.h"
+#include "Bomb.h"
 
 #include "Components/BoxComponent.h"
 
@@ -100,6 +101,16 @@ ASpike* ASpawnVolume::SpawnSpikeAtRandomPosition(float Height)
 	RandomPosition.Z = Height;
 
 	return SpawnSpike(RandomPosition);
+}
+
+ABomb* ASpawnVolume::SpawnBomb(const FVector& Position)
+{
+	return GetWorld()->SpawnActor<ABomb>(BombClass, Position, FRotator::ZeroRotator);
+}
+
+ABomb* ASpawnVolume::SpawnBombAtRandomPosition()
+{
+	return SpawnBomb(GetRandomPointInVolume());
 }
 
 AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)

@@ -15,7 +15,7 @@ ASpartaGameState::ASpartaGameState()
 	Score = 0;
 	SpawnedCoinCount = 0;
 	CollectedCoinCount = 0;
-	LevelDuration = 30.0f;
+	WaveDuration = 30.0f;
 	CurrentLevelIndex = 0;
 	MaxLevels = 3;
 }
@@ -97,7 +97,9 @@ void ASpartaGameState::OnCoinCollected()
 
 void ASpartaGameState::EndLevel()
 {
-	GetWorldTimerManager().ClearTimer(LevelTimerHandle);
+	GetWorldTimerManager().ClearTimer(WaveTimerHandle);
+	GetWorldTimerManager().ClearTimer(HUDUpdateTimerHandle);
+	GetWorldTimerManager().ClearTimer(BombSpawnTimerHandle);
 
 	if (UGameInstance* GameInstance = GetGameInstance())
 	{
@@ -156,10 +158,10 @@ void ASpartaGameState::UpdateHUD()
 						return;
 					}
 
-					float RemainingTime = GetWorldTimerManager().GetTimerRemaining(LevelTimerHandle);
+					float RemainingTime = GetWorldTimerManager().GetTimerRemaining(WaveTimerHandle);
 					TimeText->SetText(FText::FromString(FString::Printf(TEXT("Time : %.1f"), RemainingTime)));
 
-					float Ratio = (1 - RemainingTime / LevelDuration) * 360.0f;
+					float Ratio = (1 - RemainingTime / WaveDuration) * 360.0f;
 					TimeRadialSlider->SetSliderHandleStartAngle(Ratio);
 				}
 
@@ -234,22 +236,56 @@ void ASpartaGameState::StartWave()
 	if (CurrentWaveNumber < MaxWaveNumber)
 	{
 		GetWorldTimerManager().SetTimer(
-			LevelTimerHandle,
+			WaveTimerHandle,
 			this,
 			&ASpartaGameState::StartWave,
-			LevelDuration,
+			WaveDuration,
 			false
 		);
 	}
 	else
 	{
 		GetWorldTimerManager().SetTimer(
-			LevelTimerHandle,
+			WaveTimerHandle,
 			this,
 			&ASpartaGameState::OnLevelTimeUp,
-			LevelDuration,
+			WaveDuration,
 			false
 		);
+
+		GetWorldTimerManager().SetTimer(
+			BombSpawnTimerHandle,
+			[this]()
+			{
+				if (::IsValid(this) == false)
+				{
+					return;
+				}
+
+				UWorld* World = GetWorld();
+
+				if (::IsValid(World) == false)
+				{
+					return;
+				}
+
+				TArray<AActor*> Volumes;
+				UGameplayStatics::GetAllActorsOfClass(World, ASpawnVolume::StaticClass(), Volumes);
+
+				if (Volumes.Num() <= 0)
+				{
+					return;
+				}
+
+				ASpawnVolume* SpawnVolume = Cast<ASpawnVolume>(Volumes[0]);
+				if (SpawnVolume)
+				{
+					SpawnVolume->SpawnBombAtRandomPosition();
+				}
+			},
+			BombSpawnInterval,
+			true
+			);
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("Start Wave %d, Spawned %d coin"), CurrentWaveNumber, SpawnedCoinCount);
