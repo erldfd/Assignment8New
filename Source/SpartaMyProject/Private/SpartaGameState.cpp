@@ -214,6 +214,23 @@ void ASpartaGameState::StartWave()
 		}
 	}
 
+	const int32 SpikeSpawnCount = 10 * (CurrentWaveNumber - 1) * (CurrentLevelIndex + 1);
+	float Height = -100.0f;
+
+	for (int32 i = 0; i < SpikeSpawnCount; ++i)
+	{
+		if (FoundVolumes.Num() <= 0)
+		{
+			break;
+		}
+
+		ASpawnVolume* SpawnVolume = Cast<ASpawnVolume>(FoundVolumes[0]);
+		if (SpawnVolume)
+		{
+			SpawnVolume->SpawnSpikeAtRandomPosition(Height);
+		}
+	}
+
 	if (CurrentWaveNumber < MaxWaveNumber)
 	{
 		GetWorldTimerManager().SetTimer(

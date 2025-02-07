@@ -1,6 +1,7 @@
 #include "SpawnVolume.h"
 
 #include "ItemSpawnRow.h"
+#include "Spike.h"
 
 #include "Components/BoxComponent.h"
 
@@ -78,6 +79,27 @@ FVector ASpawnVolume::GetRandomPointInVolume() const
 		FMath::FRandRange(-BoxExtent.Y, BoxExtent.Y),
 		FMath::FRandRange(-BoxExtent.Z, BoxExtent.Z)
 		);
+}
+
+ASpike* ASpawnVolume::SpawnSpike(const FVector& Position)
+{
+	if (SpikeClass == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASpawnVolume::SpawnSpike, SpikeClass == nullptr"));
+		return nullptr;
+	}
+
+	ASpike* NewSpike = GetWorld()->SpawnActor<ASpike>(SpikeClass, Position, FRotator::ZeroRotator);
+
+	return NewSpike;
+}
+
+ASpike* ASpawnVolume::SpawnSpikeAtRandomPosition(float Height)
+{
+	FVector RandomPosition = GetRandomPointInVolume();
+	RandomPosition.Z = Height;
+
+	return SpawnSpike(RandomPosition);
 }
 
 AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)

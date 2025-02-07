@@ -7,6 +7,8 @@
 
 #include "SpawnVolume.generated.h"
 
+class ASpike;
+
 UCLASS()
 class SPARTAMYPROJECT_API ASpawnVolume : public AActor
 {
@@ -31,8 +33,13 @@ public:
 	struct FItemSpawnRow* GetRandomItem() const;
 	AActor* SpawnItem(TSubclassOf<AActor> ItemClass);
 	FVector GetRandomPointInVolume() const;
-	
 
+	ASpike* SpawnSpike(const FVector& Position);
+	
+	ASpike* SpawnSpikeAtRandomPosition(float Height);
 protected:
+
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	TSubclassOf<class ASpike> SpikeClass;
 
 };
