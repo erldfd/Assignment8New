@@ -14,8 +14,9 @@ public class SpartaMyProject : ModuleRules
 			"Engine",
 			"InputCore",
 			"EnhancedInput",
-			"UMG"
-		});
+			"UMG",
+            "AdvancedWidgets"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 	}

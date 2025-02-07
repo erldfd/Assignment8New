@@ -53,13 +53,13 @@ void ASpartaPlayerController::ShowMainMenu(bool bIsRestart)
 {
 	if (HUDWidgetInstance)
 	{
-		HUDWidgetInstance->RemoveFromViewport();
+		HUDWidgetInstance->RemoveFromParent();
 		HUDWidgetInstance = nullptr;
 	}
 
 	if (MainMenuWidgetInstance)
 	{
-		MainMenuWidgetInstance->RemoveFromViewport();
+		MainMenuWidgetInstance->RemoveFromParent();
 		MainMenuWidgetInstance = nullptr;
 	}
 
@@ -111,13 +111,13 @@ void ASpartaPlayerController::ShowGameHUD()
 {
 	if (HUDWidgetInstance)
 	{
-		HUDWidgetInstance->RemoveFromViewport();
+		HUDWidgetInstance->RemoveFromParent();
 		HUDWidgetInstance = nullptr;
 	}
 
 	if (MainMenuWidgetInstance)
 	{
-		MainMenuWidgetInstance->RemoveFromViewport();
+		MainMenuWidgetInstance->RemoveFromParent();
 		MainMenuWidgetInstance = nullptr;
 	}
 

@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/TextBlock.h"
 #include "Blueprint/UserWidget.h"
+#include "Runtime/AdvancedWidgets/Public/Components/RadialSlider.h"
 
 ASpartaGameState::ASpartaGameState()
 {
@@ -29,7 +30,7 @@ void ASpartaGameState::BeginPlay()
 		HUDUpdateTimerHandle,
 		this,
 		&ASpartaGameState::UpdateHUD,
-		0.1f,
+		0.02f,
 		true
 	);
 }
@@ -176,9 +177,19 @@ void ASpartaGameState::UpdateHUD()
 			{
 				if (UTextBlock* TimeText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Time"))))
 				{
+					URadialSlider* TimeRadialSlider = Cast<URadialSlider>(HUDWidget->GetWidgetFromName(TEXT("TimeRadialSlider")));
+
+					if (TimeRadialSlider == nullptr)
+					{
+						UE_LOG(LogTemp, Error, TEXT("TimeRadialSlider is nullptr"));
+						return;
+					}
+
 					float RemainingTime = GetWorldTimerManager().GetTimerRemaining(LevelTimerHandle);
 					TimeText->SetText(FText::FromString(FString::Printf(TEXT("Time : %.1f"), RemainingTime)));
 
+					float Ratio = (1 - RemainingTime / LevelDuration) * 360.0f;
+					TimeRadialSlider->SetSliderHandleStartAngle(Ratio);
 				}
 
 				if (UTextBlock* ScoreText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Score"))))
@@ -196,6 +207,11 @@ void ASpartaGameState::UpdateHUD()
 				if (UTextBlock* LevelIndexText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Level"))))
 				{
 					LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT("Level : %d"), CurrentLevelIndex + 1)));
+				}
+
+				if (UTextBlock* WaveNumberText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Wave"))))
+				{
+					WaveNumberText->SetText(FText::FromString(FString::Printf(TEXT("Wave : %d"), CurrentWaveNumber)));
 				}
 			}
 		}
