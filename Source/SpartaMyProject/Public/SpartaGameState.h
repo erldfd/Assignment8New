@@ -58,4 +58,15 @@ public:
 	void OnCoinCollected();
 	void EndLevel();
 	void UpdateHUD();
+
+private:
+
+	void StartWave();
+
+private:
+
+	int32 CurrentWaveNumber = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Level")
+	int32 MaxWaveNumber = 3;
 };

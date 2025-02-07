@@ -78,36 +78,18 @@ void AMineItem::Explode()
 
 	DestroyItem();
 
-	if (Particle)
+	/*if (Particle)
 	{
 		FTimerHandle DestroyParticleTimerHandle;
-		UWorld* World = GetWorld();
-		World->GetTimerManager().SetTimer(
+
+		GetWorld()->GetTimerManager().SetTimer(
 			DestroyParticleTimerHandle,
-			[Particle, this, World]()
+			[Particle]()
 			{
-				if (::IsValid(this) == false)
-				{
-					UE_LOG(LogTemp, Error, TEXT("this is not valid- m"));
-					return;
-				}
-
-				if (::IsValid(World) == false)
-				{
-					UE_LOG(LogTemp, Error, TEXT("World Is Not Valid - m"));
-					return;
-				}
-
-				if (::IsValid(Particle) == false)
-				{
-					UE_LOG(LogTemp, Error, TEXT("Particle Is Not Valid - m"));
-					return;
-				}
-
 				Particle->DestroyComponent();
 			},
 			2.0f,
 			false
 		);
-	}
+	}*/
 }
