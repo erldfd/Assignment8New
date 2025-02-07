@@ -86,21 +86,15 @@ void AMineItem::Explode()
 			DestroyParticleTimerHandle,
 			[Particle, this, World]()
 			{
-				if (::IsValid(this) == false)
-				{
-					UE_LOG(LogTemp, Error, TEXT("this is not valid- m"));
-					return;
-				}
-
 				if (::IsValid(World) == false)
 				{
-					UE_LOG(LogTemp, Error, TEXT("World Is Not Valid - m"));
+					UE_LOG(LogTemp, Log, TEXT("World Is Not Valid - m"));
 					return;
 				}
 
 				if (::IsValid(Particle) == false)
 				{
-					UE_LOG(LogTemp, Error, TEXT("Particle Is Not Valid - m"));
+					UE_LOG(LogTemp, Log, TEXT("Particle Is Not Valid - m"));
 					return;
 				}
 

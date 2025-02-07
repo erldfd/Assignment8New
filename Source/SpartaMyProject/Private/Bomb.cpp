@@ -2,6 +2,7 @@
 
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ABomb::ABomb()
 {
@@ -17,13 +18,14 @@ void ABomb::BeginPlay()
 
 	if (ExplosionParticle)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(
+		UParticleSystemComponent* Particle = UGameplayStatics::SpawnEmitterAtLocation(
 			GetWorld(),
 			ExplosionParticle,
 			GetActorLocation(),
 			GetActorRotation(),
 			false
 		);
+		Particle->SetWorldScale3D(FVector(10, 10, 10));
 	}
 
 	if (ExplosionSound)

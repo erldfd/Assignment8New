@@ -79,21 +79,15 @@ void ABaseItem::ActivateItem(AActor* Activator)
 			DestroyParticleTimerHandle,
 			[Particle, World, this]()
 			{
-				if (::IsValid(this) == false)
-				{
-					UE_LOG(LogTemp, Error, TEXT("this is not valid"));
-					return;
-				}
-
 				if (::IsValid(World) == false)
 				{
-					UE_LOG(LogTemp, Error, TEXT("World Is Not Valid"));
+					UE_LOG(LogTemp, Log, TEXT("World Is Not Valid"));
 					return;
 				}
 				
 				if (::IsValid(Particle) == false)
 				{
-					UE_LOG(LogTemp, Error, TEXT("Particle Is Not Valid"));
+					UE_LOG(LogTemp, Log, TEXT("Particle Is Not Valid"));
 					return;
 				}
 
