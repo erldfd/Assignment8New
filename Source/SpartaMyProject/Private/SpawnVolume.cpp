@@ -3,6 +3,7 @@
 #include "ItemSpawnRow.h"
 #include "Spike.h"
 #include "Bomb.h"
+#include "SpecialStarItem.h"
 
 #include "Components/BoxComponent.h"
 
@@ -105,12 +106,34 @@ ASpike* ASpawnVolume::SpawnSpikeAtRandomPosition(float Height)
 
 ABomb* ASpawnVolume::SpawnBomb(const FVector& Position)
 {
+	if (BombClass == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASpawnVolume::SpawnBomb, BombClass == nullptr"));
+		return nullptr;
+	}
+
 	return GetWorld()->SpawnActor<ABomb>(BombClass, Position, FRotator::ZeroRotator);
 }
 
 ABomb* ASpawnVolume::SpawnBombAtRandomPosition()
 {
 	return SpawnBomb(GetRandomPointInVolume());
+}
+
+ASpecialStarItem* ASpawnVolume::SpawnSpecialStar(const FVector& Position)
+{
+	if (SpecialStarClass == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ASpawnVolume::SpawnSpecialStar, SpecialStarClass == nullptr"));
+		return nullptr;
+	}
+
+	return GetWorld()->SpawnActor<ASpecialStarItem>(SpecialStarClass, Position, FRotator::ZeroRotator);;
+}
+
+ASpecialStarItem* ASpawnVolume::SpawnSpecialStarAtRandomPosition()
+{
+	return SpawnSpecialStar(GetRandomPointInVolume());
 }
 
 AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)

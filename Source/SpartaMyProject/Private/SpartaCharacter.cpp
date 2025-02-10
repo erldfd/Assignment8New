@@ -2,6 +2,7 @@
 
 #include "SpartaPlayerController.h"
 #include "SpartaGameState.h"
+#include "SpecialStarItem.h"
 
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
@@ -25,6 +26,7 @@ ASpartaCharacter::ASpartaCharacter()
 
 	CameraComp->PostProcessSettings.VignetteIntensity = 1.0f;
 	CameraComp->PostProcessSettings.AutoExposureBias = -4.0f;
+	CameraComp->PostProcessSettings.MotionBlurPerObjectSize = 100.0f;
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(GetMesh());
@@ -112,6 +114,16 @@ void ASpartaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 					&ASpartaCharacter::StopSprint
 				);
 			}
+
+			if (PlayerController->InteractionAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->InteractionAction,
+					ETriggerEvent::Triggered,
+					this,
+					&ASpartaCharacter::Interaction
+				);
+			}
 		}
 	}
 }
@@ -186,6 +198,52 @@ void ASpartaCharacter::StopSprint(const FInputActionValue& Value)
 	bIsSprinting = false;
 }
 
+void ASpartaCharacter::Interaction(const FInputActionValue& Value)
+{
+	ASpartaPlayerController* PlayerController = Cast<ASpartaPlayerController>(GetController());
+	if (PlayerController == nullptr)
+	{
+		return;
+	}
+
+	FVector WorldLocation;
+	FVector WorldDirection;
+
+	int32 ViewportX, ViewportY;
+	PlayerController->GetViewportSize(ViewportX, ViewportY);
+
+	FVector2D Center(ViewportX / 2, ViewportY / 2);
+
+
+	if (PlayerController->DeprojectScreenPositionToWorld(Center.X, Center.Y, WorldLocation, WorldDirection) == false)
+	{
+		return;
+	}
+
+	float InteractableRange = 600.0f;
+	const FVector& StartPoint = GetActorLocation();
+	const FVector& EndPoint = WorldLocation + (WorldDirection * InteractableRange);
+
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	bool bIsHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartPoint, EndPoint, ECollisionChannel::ECC_GameTraceChannel2, QueryParams);
+
+	if (bIsHit == false)
+	{
+		return;
+	}
+
+	ASpecialStarItem* StarItem = Cast<ASpecialStarItem>(HitResult.GetActor());
+	if (StarItem == nullptr)
+	{
+		return;
+	}
+
+	StarItem->ActivateItem(this);
+}
+
 float ASpartaCharacter::GetHealth() const
 {
 	return Health;
@@ -200,6 +258,11 @@ void ASpartaCharacter::AddHealth(float Amount)
 void ASpartaCharacter::ActivateSlowDebuff(float DebuffTime)
 {
 	if (DebuffTime < GetRemainingSlowDebuffTime())
+	{
+		return;
+	}
+
+	if (GetRemainingSpecialBuffTime() > 0)
 	{
 		return;
 	}
@@ -224,6 +287,11 @@ void ASpartaCharacter::ActivateControlReversalDebuff(float DebuffTime)
 		return;
 	}
 
+	if (GetRemainingSpecialBuffTime() > 0)
+	{
+		return;
+	}
+
 	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.0f, FColor::Red, TEXT("Moves Are Reveresed"));
 
 	GetWorldTimerManager().SetTimer(ControlDebuffTimerHandle, [&]()
@@ -236,6 +304,11 @@ void ASpartaCharacter::ActivateControlReversalDebuff(float DebuffTime)
 void ASpartaCharacter::ActivateBlindDebuff(float DebuffTime)
 {
 	if (DebuffTime < GetRemainingBlindDebuffTime())
+	{
+		return;
+	}
+
+	if (GetRemainingSpecialBuffTime() > 0)
 	{
 		return;
 	}
@@ -253,6 +326,33 @@ void ASpartaCharacter::ActivateBlindDebuff(float DebuffTime)
 		}, DebuffTime, false);
 }
 
+void ASpartaCharacter::ActivateSpecialBuff(float BuffTime)
+{
+	if (BuffTime < GetRemainingSpecialBuffTime())
+	{
+		return;
+	}
+
+	CameraComp->PostProcessSettings.bOverride_VignetteIntensity = false;
+	CameraComp->PostProcessSettings.bOverride_AutoExposureBias = false;
+	CameraComp->PostProcessSettings.bOverride_MotionBlurPerObjectSize = true;
+
+	GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.0f, FColor::Blue, TEXT("Special Buff Activated"));
+	CurrentDebuffedSpeedMultiplier = 2.0f;
+
+	GetWorldTimerManager().ClearTimer(ControlDebuffTimerHandle);
+	GetWorldTimerManager().ClearTimer(SlowDebuffTimerHandle);
+	GetWorldTimerManager().ClearTimer(BlindDebuffTimerHandle);
+
+	GetWorldTimerManager().SetTimer(SpecialBuffTimerHandle, [&]()
+		{
+			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.0f, FColor::Red, TEXT("Special Buff Ended"));
+			CurrentDebuffedSpeedMultiplier = 1.0f;
+			CameraComp->PostProcessSettings.bOverride_MotionBlurPerObjectSize = false;
+
+		}, BuffTime, false);
+}
+
 float ASpartaCharacter::GetRemainingSlowDebuffTime() const
 {
 	return GetWorldTimerManager().GetTimerRemaining(SlowDebuffTimerHandle);
@@ -266,6 +366,11 @@ float ASpartaCharacter::GetRemainingControlDebuffTime() const
 float ASpartaCharacter::GetRemainingBlindDebuffTime() const
 {
 	return GetWorldTimerManager().GetTimerRemaining(BlindDebuffTimerHandle);
+}
+
+float ASpartaCharacter::GetRemainingSpecialBuffTime() const
+{
+	return GetWorldTimerManager().GetTimerRemaining(SpecialBuffTimerHandle);
 }
 
 float ASpartaCharacter::TakeDamage(

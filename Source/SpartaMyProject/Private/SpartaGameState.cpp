@@ -85,9 +85,6 @@ void ASpartaGameState::OnLevelTimeUp()
 void ASpartaGameState::OnCoinCollected()
 {
 	CollectedCoinCount++;
-	UE_LOG(LogTemp, Warning, TEXT("Coin Collected: %d / %d"),
-		CollectedCoinCount,
-		SpawnedCoinCount);
 
 	if (SpawnedCoinCount > 0 && CollectedCoinCount >= SpawnedCoinCount)
 	{
@@ -193,6 +190,13 @@ void ASpartaGameState::UpdateHUD()
 
 void ASpartaGameState::StartWave()
 {
+	ASpartaPlayerController* SpartaPlayerController = Cast<ASpartaPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (SpartaPlayerController == nullptr)
+	{
+		return;
+	}
+
+
 	CurrentWaveNumber++;
 
 	TArray<AActor*> FoundVolumes;
@@ -219,6 +223,11 @@ void ASpartaGameState::StartWave()
 	const int32 SpikeSpawnCount = 10 * (CurrentWaveNumber - 1) * (CurrentLevelIndex + 1);
 	float Height = -100.0f;
 
+	if (CurrentWaveNumber == 2)
+	{
+		SpartaPlayerController->ActivateTrapText(TEXT("Spike Trap Is Activated!"));
+	}
+
 	for (int32 i = 0; i < SpikeSpawnCount; ++i)
 	{
 		if (FoundVolumes.Num() <= 0)
@@ -230,6 +239,21 @@ void ASpartaGameState::StartWave()
 		if (SpawnVolume)
 		{
 			SpawnVolume->SpawnSpikeAtRandomPosition(Height);
+		}
+	}
+
+	const int32 StarSpawnCount = 1;
+	for (int32 i = 0; i < StarSpawnCount; ++i)
+	{
+		if (FoundVolumes.Num() <= 0)
+		{
+			break;
+		}
+
+		ASpawnVolume* SpawnVolume = Cast<ASpawnVolume>(FoundVolumes[0]);
+		if (SpawnVolume)
+		{
+			SpawnVolume->SpawnSpecialStarAtRandomPosition();
 		}
 	}
 
@@ -252,6 +276,8 @@ void ASpartaGameState::StartWave()
 			WaveDuration,
 			false
 		);
+
+		SpartaPlayerController->ActivateTrapText(TEXT("Bomb Trap Is Activated!"));
 
 		GetWorldTimerManager().SetTimer(
 			BombSpawnTimerHandle,

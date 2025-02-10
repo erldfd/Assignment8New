@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 ASpartaPlayerController::ASpartaPlayerController() :
 	InputMappingContext(nullptr),
@@ -14,6 +15,7 @@ ASpartaPlayerController::ASpartaPlayerController() :
 	JumpAction(nullptr),
 	LookAction(nullptr),
 	SprintAction(nullptr),
+	InteractionAction(nullptr),
 	HUDWidgetClass(nullptr),
 	HUDWidgetInstance(nullptr),
 	MainMenuWidgetClass(nullptr),
@@ -41,6 +43,94 @@ void ASpartaPlayerController::BeginPlay()
 	if (CurrentMapName.Contains("MenuLevel"))
 	{
 		ShowMainMenu(false);
+	}
+}
+
+void ASpartaPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	CheckInteractableItem();
+}
+
+void ASpartaPlayerController::ActivateTrapText(const FString& TrapMessage)
+{
+	UTextBlock* TrapActivatedText = Cast<UTextBlock>(HUDWidgetInstance->GetWidgetFromName(TEXT("TrapActivatedText")));
+
+	if (TrapActivatedText == nullptr)
+	{
+		return;
+	}
+
+	TrapActivatedText->SetText(FText::FromString(TrapMessage));
+	TrapActivatedText->SetVisibility(ESlateVisibility::HitTestInvisible);
+	UE_LOG(LogTemp, Error, TEXT("%s"), *TrapMessage);
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, [&]()
+		{
+			UTextBlock* InTrapActivatedText = Cast<UTextBlock>(HUDWidgetInstance->GetWidgetFromName(TEXT("TrapActivatedText")));
+
+			if (InTrapActivatedText == nullptr)
+			{
+				return;
+			}
+
+			InTrapActivatedText->SetVisibility(ESlateVisibility::Hidden);
+
+		}, 3, false);
+}
+
+void ASpartaPlayerController::CheckInteractableItem()
+{
+	if (HUDWidgetInstance == nullptr)
+	{
+		return;
+	}
+
+	UWidget* PickupTextWidget = HUDWidgetInstance->GetWidgetFromName(TEXT("PickupStarText"));
+
+	if (PickupTextWidget == nullptr)
+	{
+		return;
+	}
+
+	FVector WorldLocation;
+	FVector WorldDirection;
+
+	int32 ViewportX, ViewportY;
+	GetViewportSize(ViewportX, ViewportY);
+
+	FVector2D Center(ViewportX / 2, ViewportY / 2);
+
+
+	if (DeprojectScreenPositionToWorld(Center.X, Center.Y, WorldLocation, WorldDirection) == false)
+	{
+		return;
+	}
+
+	float InteractableRange = 600.0f;
+	const FVector& StartPoint = GetPawn()->GetActorLocation();
+	const FVector& EndPoint = WorldLocation + (WorldDirection * InteractableRange);
+
+	FHitResult Result;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.AddIgnoredActor(GetPawn());
+
+	FCollisionObjectQueryParams ObjectQueryParam;
+	ObjectQueryParam.AddObjectTypesToQuery(ECollisionChannel::ECC_GameTraceChannel1);
+
+	TArray<FHitResult> Test;
+
+	bool bIsHit = GetWorld()->LineTraceTestByChannel(StartPoint, EndPoint, ECollisionChannel::ECC_GameTraceChannel2, QueryParams);
+
+	if (bIsHit)
+	{
+		PickupTextWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		PickupTextWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 

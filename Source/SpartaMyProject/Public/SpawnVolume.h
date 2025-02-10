@@ -9,6 +9,7 @@
 
 class ASpike;
 class ABomb;
+class ASpecialStarItem;
 
 UCLASS()
 class SPARTAMYPROJECT_API ASpawnVolume : public AActor
@@ -42,6 +43,8 @@ public:
 	ABomb* SpawnBomb(const FVector& Position);
 	ABomb* SpawnBombAtRandomPosition();
 
+	ASpecialStarItem* SpawnSpecialStar(const FVector& Position);
+	ASpecialStarItem* SpawnSpecialStarAtRandomPosition();
 
 protected:
 
@@ -50,5 +53,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	TSubclassOf<ABomb> BombClass;
+
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	TSubclassOf<ASpecialStarItem> SpecialStarClass;
 
 };

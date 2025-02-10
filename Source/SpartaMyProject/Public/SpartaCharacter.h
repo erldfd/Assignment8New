@@ -37,10 +37,12 @@ public:
 	void ActivateSlowDebuff(float DebuffTime);
 	void ActivateControlReversalDebuff(float DebuffTime);
 	void ActivateBlindDebuff(float DebuffTime);
+	void ActivateSpecialBuff(float BuffTime);
 
 	float GetRemainingSlowDebuffTime() const;
 	float GetRemainingControlDebuffTime() const;
 	float GetRemainingBlindDebuffTime() const;
+	float GetRemainingSpecialBuffTime() const;
 
 protected:
 
@@ -76,6 +78,9 @@ protected:
 	UFUNCTION()
 	void StopSprint(const FInputActionValue& Value);
 
+	UFUNCTION()
+	void Interaction(const FInputActionValue& Value);
+
 	void OnDeath();
 	void UpdateOverheadHP();
 
@@ -92,4 +97,5 @@ private:
 	FTimerHandle SlowDebuffTimerHandle;
 	FTimerHandle ControlDebuffTimerHandle;
 	FTimerHandle BlindDebuffTimerHandle;
+	FTimerHandle SpecialBuffTimerHandle;
 };
